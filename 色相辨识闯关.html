@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>色相辨识闯关</title>
+    <style>
+      body{
+        background-image: url("背景.png");}
+
+      h1,p {
+        text-align: center;}
+
+      #timer{
+        text-align: center;}
+
+      .header {
+        background-color: rgba(255, 255, 255, 0.881);}
+
+      .box {
+        display: flex;
+        flex-wrap: wrap;
+        width: 93vw;
+        height: 80vh;
+        border: 2px solid rgb(0, 0, 0);
+        margin: 0 auto;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      .item {
+        width: 10vw;
+        height: 10vw;
+        border: 1px solid rgb(0, 0, 0);
+        box-sizing: border-box;
+
+        position: absolute;
+        top: 0;
+        left: 0;}
+        
+      .center {
+        text-align: center;}
+
+      .center button {
+        margin: 20px auto 0;}
+      
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>色相辨识闯关</h1>
+      <div id="timer">
+        <p>1:00</p>
+      </div>
+      <p class="s">第1关</p>
+    </div>
+     
+    <div class="box"></div>
+    <script>
+      let box = document.querySelector(".box");
+      let d = 20;
+      let s = 1;
+      let items = []; //设置为空数组
+      let maxX = box.clientWidth; //右边界
+      let maxY = box.clientHeight; //下边界
+
+      //主要执行代码
+      for (let i = 0; i < 16; i++) {
+        let item = document.createElement("div");
+        item.className = "item";
+        items.push(item);
+        box.appendChild(item);
+        event(item);
+      }
+
+      let itemX = items[0].offsetWidth; //单个item宽
+      let itemY = items[0].offsetHeight; //单个item高
+
+      items.forEach((item) => move(item)); //为每个item设置单独的移动方式
+      setColor(); //设置颜色
+
+      function move(item) {
+        //与item移动动画有关的函数
+        //设置初始位置
+        let randomX = Math.floor(Math.random() * (maxX - itemX));
+        let randomY = Math.floor(Math.random() * (maxY - itemY));
+        item.style.left = randomX + "px";
+        item.style.top = randomY + "px";
+
+        let dirX = Math.pow(-1, Math.round(Math.random() + 1)); //移动方向x
+        let dirY = Math.pow(-1, Math.round(Math.random() + 1)); //移动方向y
+        let k = Math.random() * 3 + 1; //斜率
+        let step = 2.5; //步长，可调整来改变速度
+
+        let nowX = randomX; //当前偏移x
+        let nowY = randomY; //当前偏移y
+
+        item.timer = setInterval(() => {
+          nowX += dirX * step;
+          nowY += dirY * k * step;
+
+          //为防止item超出边界，需要进行是否超出边界判断，限制偏移量并及时改变移动方向
+          if (nowX < 0) {
+            nowX = 0;
+            dirX = -dirX;
+          } else if (nowX > maxX - itemX) {
+            nowX = maxX - itemX;
+            dirX = -dirX;
+          }
+
+          if (nowY < 0) {
+            nowY = 0;
+            dirY = -dirY;
+          } else if (nowY > maxY - itemY) {
+            nowY = maxY - itemY;
+            dirY = -dirY;
+          }
+
+          item.style.left = nowX + "px";
+          item.style.top = nowY + "px";
+        }, 50); //通过定时器实现item的移动，此处为50ms移动一次，可根据需要适当调整
+      }
+
+      function event(dom) {
+        dom.addEventListener("click", function () {
+          if (this.index) {
+            d--;
+            s++;
+            document.querySelector(".s").innerHTML = "第" + s + "关";
+            setColor();
+          } else {
+            alert("错误,您的通关数为：第" + (s - 1) + "关");
+            location.reload();
+          }
+        });
+      }
+
+      function setColor() {
+        let rgbs = [];
+        let flag = Math.floor(Math.random() * 15);
+        for (let i = 0; i < 3; i++) {
+          rgbs.push(Math.round(Math.random() * 150 + 100));
+        }
+
+        items.forEach((v, i) => {
+          let ds = i == flag ? d : 0;
+          v.style.backgroundColor = `rgb(${rgbs[0] - ds}, ${rgbs[1] - ds}, ${
+            rgbs[2] - ds
+          })`;
+          v.index = false;
+          v.classList.add("item"); // Add this line
+        });
+
+        items[flag].index = true;
+      }
+
+      function handleClick(event) {
+        if (getCurrentLevel() === 20) {
+          alert("你真的很不错！");
+        }
+      }
+      let timerElement = document.getElementById("timer");
+      let timeRemaining = 60; // 2分钟，单位为秒
+      
+      let countdown = setInterval(() => {
+        timeRemaining--;
+        let minutes = Math.floor(timeRemaining / 60);
+        let seconds = timeRemaining % 60;
+        timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+        if (timeRemaining === 0) {
+          clearInterval(countdown);
+          alert("时间到了!");
+          location.reload();
+        }
+        if (timeRemaining <= 10) {
+        timerElement.style.color = "red";
+      }
+      }, 1000); // 每秒更新一次倒计时
+      
+    </script>
+    <div class="center">
+      <button onclick="location.reload()">重启</button>
+    </div>
+  </body>
+</html>
